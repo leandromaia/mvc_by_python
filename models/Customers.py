@@ -3,11 +3,6 @@ import sqlite3
 
 '''Responsible for 'Customers' database access'''
 class Customers:
-
-    def __init__(self):
-        self.conn = sqlite3.connect('database.sqlite')
-        self.c = self.conn.cursor()
-        print("Opened database successfully")    
     
     def add(self, fields):
         '''Adds a customer in database'''       
@@ -35,23 +30,53 @@ class Customers:
 
     def getAll(self):
         '''Returns list of all customers records in database'''
-        self.c.execute("SELECT * FROM customers")
-        return self.c.fetchall()
+        self._connect_database()
+        sql = "SELECT * FROM customers"
+
+        return self._execute_read_query(sql, self.cursor.fetchall)
     
     def get(self, id):
         '''Returns the record with a specific id'''
-        self.c.execute(f"SELECT * FROM customers WHERE id = {id}" )
-        return self.c.fetchone()
+        self._connect_database()
+        sql = f"SELECT * FROM customers WHERE id = {id}"
+
+        return self._execute_read_query(sql, self.cursor.fetchone)
+
+    def _connect_database(self):
+        self.conn = sqlite3.connect('database.sqlite')
+        self.cursor = self.conn.cursor()
+        print("Database created and Successfully Connected to SQLite")  
 
     def _execute_write_query(self, sql):
+        self._connect_database()
         response = 0
         try:
-            self.c.execute(sql)
+            self.cursor.execute(sql)
             self.conn.commit()
-            response = self.c.rowcount
-        except Exception as e:
-            print(f'Failed the write operation: {e}')
+            response = self.cursor.rowcount
+
+            self.cursor.close()
+        except sqlite3.Error as error:
+            print("Error while connecting to sqlite", error)
         finally:
-            self.conn.close()
+            if self.conn:
+                self.conn.close()
+                print("The SQLite connection is closed")
 
         return response
+
+    def _execute_read_query(self, sql, operation):
+        record = None
+        try:
+            self.cursor.execute(sql)
+            record = operation()
+
+            self.cursor.close()
+        except sqlite3.Error as error:
+            print("Error while connecting to sqlite", error)
+        finally:
+            if self.conn:
+                self.conn.close()
+                print("The SQLite connection is closed")
+
+        return record
