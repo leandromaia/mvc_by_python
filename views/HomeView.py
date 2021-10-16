@@ -18,7 +18,7 @@ class HomeView(tk.Tk, View):
     def __init__(self, controller):
         '''Controller of this view'''
         super().__init__()
-        self.title("Customers Manager")
+        self.title("Cutomers Manager")
         self.homeController = controller
         
         self._make_mainFrame()
