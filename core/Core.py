@@ -18,7 +18,6 @@ class Core:
         # Check if file exists
         if os.path.exists(APP_PATH + "/controllers/" + controller_name + ".py"):
             module = importlib.import_module("controllers." + controller_name)
-            import pdb; pdb.set_trace()
             class_ = getattr(module, controller_name)
             response = class_()
  
